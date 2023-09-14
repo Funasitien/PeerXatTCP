@@ -1,4 +1,4 @@
-# Script du client
+# Script du client 
 
 import socket
 from threading import Thread

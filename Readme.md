@@ -1,2 +1,2 @@
 #PeerXat [TCP]
-Sync chat on multiples servers.
+Syncronisation de chat multi serveurs
