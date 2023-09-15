@@ -10,11 +10,11 @@ jobs:
         with:
           panel-host: ${{ secrets.PANEL_HOST }}
           api-key: ${{ secrets.API_KEY }}
-          server-id: "5f095019"
+          server-id: "1655588d"
           #   server-ids: |
           #     5f095019
           #     7f095019
-          source: "hello.txt"
+          source: "./"
           #   sources: |
           #     hello.txt
           #     hello2.txt
