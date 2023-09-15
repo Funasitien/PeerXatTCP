@@ -17,13 +17,15 @@ class TCPClient:
     sock.sendall(msg)
     sock.close()
 
-if __name__ == '__main__':
+  def launch(ip, port):
+    
+    print("Connexion au serveur " + ip + " sur le port " + str(port))
+    client = TCPClient(ip, port)
 
-  client = TCPClient('localhost', 50101)
+    while True:
+      msg = input("Enter message to send: ")
+      if msg == 'quit':
+        break
 
-  while True:
-    msg = input("Enter message to send: ")
-    if msg == 'quit':
-      break
+      client.send(msg)
 
-    client.send(msg)
