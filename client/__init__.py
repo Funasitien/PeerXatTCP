@@ -1,31 +1,49 @@
 import socket
+import time
+from threading import Thread
+import os
+import sys
+from rich.table import Table
+from rich import print
 
-class TCPClient:
+table = Table(expand=True)
+table.add_column("PeerXat - Messages", justify="left", no_wrap=True)
 
-  def __init__(self, host, port):
-    self.host = host
-    self.port = port
+class myThread (Thread):
 
-  def connect(self):  
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect((self.host, self.port))
-    return sock
+    def __init__(self):
+        Thread.__init__(self)
 
-  def send(self, msg):
-    sock = self.connect()
-    msg = msg.encode() 
-    sock.sendall(msg)
-    sock.close()
+    def run(self):
+        while True:
+            a = input(">> ")
+            client.send(a.encode("utf-8"))
+            # On attend un message, quand il arrive on récupère aussi l'adresse de l'expéditeur
+            response = client.recv(1024).decode('utf-8')
 
-  def launch(ip, port):
-    
-    print("Connexion au serveur " + ip + " sur le port " + str(port))
-    client = TCPClient(ip, port)
+            table.add_row(response)
+            os.system("clear")
+            os.system('cls')
+            print(table)
+            a = input(">> ")
+            client.send(a.encode("utf-8"))
+            
+        c.close()
 
-    while True:
-      msg = input("Enter message to send: ")
-      if msg == 'quit':
-        break
 
-      client.send(msg)
+is_connected = False
+while is_connected != True:
+    try:
+        client = socket.socket()
+        client.connect(('omega.forcehost.net', 25631))
+        is_connected = True
+    except OSError:
+        print("Can't connect")
+        client.close()
+        time.sleep(3)
 
+thread = myThread()
+thread.start()
+
+
+client.close()
