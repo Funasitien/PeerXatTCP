@@ -1,48 +1,39 @@
 import socket
-import time
-from threading import Thread
-import os
-import sys
-from rich.table import Table
-from rich import print
+import threading
 
-table = Table(expand=True)
-table.add_column("PeerXat - Messages", justify="left", no_wrap=True)
+# Choosing Nickname
+nickname = input("Choose your nickname: ")
 
-class myThread (Thread):
+# Connecting To Server
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client.connect(('127.0.1.1', 50101))
 
-    def __init__(self):
-        Thread.__init__(self)
+# Listening to Server and Sending Nickname
+def receive():
+    while True:
+        try:
+            # Receive Message From Server
+            # If 'NICK' Send Nickname
+            message = client.recv(1024).decode('ascii')
+            if message == 'NICK':
+                client.send(nickname.encode('ascii'))
+            else:
+                print(message)
+        except:
+            # Close Connection When Error
+            print("An error occured!")
+            client.close()
+            break
+        
+# Sending Messages To Server
+def write():
+    while True:
+        message = '{}: {}'.format(nickname, input(''))
+        client.send(message.encode('ascii'))
+        
+# Starting Threads For Listening And Writing
+receive_thread = threading.Thread(target=receive)
+receive_thread.start()
 
-    def run(self):
-        while True:
-            client.send(a.encode("utf-8"))
-            # On attend un message, quand il arrive on récupère aussi l'adresse de l'expéditeur
-            response = client.recv(1024).decode('utf-8')
-
-            table.add_row(response)
-            os.system("clear")
-            os.system('cls')
-            print(table)
-            a = input(">> ")
-            client.send(a.encode("utf-8"))
-            
-        c.close()
-
-
-is_connected = False
-while is_connected != True:
-    try:
-        client = socket.socket()
-        client.connect(('omega.forcehost.net', 25631))
-        is_connected = True
-    except OSError:
-        print("Can't connect")
-        client.close()
-        time.sleep(3)
-
-thread = myThread()
-thread.start()
-
-
-client.close()
+write_thread = threading.Thread(target=write)
+write_thread.start()
