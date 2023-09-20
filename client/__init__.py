@@ -16,7 +16,6 @@ class myThread (Thread):
 
     def run(self):
         while True:
-            a = input(">> ")
             client.send(a.encode("utf-8"))
             # On attend un message, quand il arrive on récupère aussi l'adresse de l'expéditeur
             response = client.recv(1024).decode('utf-8')
