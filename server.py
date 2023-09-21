@@ -14,47 +14,71 @@ server.listen()
 # Lists For Clients and Their Nicknames
 clients = []
 nicknames = []
+servers = []
 
 # Sending Messages To All Connected Clients
 def broadcast(message):
     for client in clients:
         client.send(message)
         
+    for client in servers:
+        ssd = SCHOOL + ":" + "" + message
+        ssd = ssd.encode('utf-8')
+        client.send(ssd)
+        
+        
+def close():
+    server.close()
+    
+
 # Handling Messages From Clients
 def handle(client):
     while True:
         try:
             # Broadcasting Messages
             message = client.recv(1024)
-            broadcast(message)
+            print(message)
+            
+            ## CETTE FONCTION EST BUGGER. DES QUE L'ON CALL CLIENT  OU CLIENT.RADRR, LE CLIENT CRASH
+            # Aider moi svp
+            if client in clients:
+                
+                position = clients.index(client)
+                name = nickname[position]
+                broadcast(name + " : " + message)
+                
+            elif client in servers:
+                print("DNS")
+            
         except:
             # Removing And Closing Clients
             index = clients.index(client)
             clients.remove(client)
             client.close()
             nickname = nicknames[index]
-            broadcast('{} left!'.format(nickname).encode('ascii'))
-            print(color.r + f'{nickname} left!' + color.red)
+            broadcast('{} left!'.format(nickname).encode('utf-8'))
+            print(color.r + f'{nickname} left!' + color.k)
             nicknames.remove(nickname)
             break
         
 # Receiving / Listening Function
 def receive():
+    print(color.g + "Server Started" + color.k)
     while True:
         # Accept Connection
         client, address = server.accept()
         print(color.g + "Connected with {}".format(str(address)) + color.k)
 
         # Request And Store Nickname
-        client.send('NICK'.encode('ascii'))
-        nickname = client.recv(1024).decode('ascii')
+        client.send('NICK'.encode('utf-8'))
+        nickname = client.recv(1024).decode('utf-8')
         nicknames.append(nickname)
         clients.append(client)
 
         # Print And Broadcast Nickname
         print("Nickname is {}".format(nickname))
-        broadcast("{} joined!".format(nickname).encode('ascii'))
-        client.send('Connected to server!'.encode('ascii'))
+        broadcast("{} joined!".format(nickname).encode('utf-8'))
+        client.send('Connected to server!'.encode('utf-8'))
 
         # Start Handling Thread For Client
         thread = threading.Thread(target=handle, args=(client,))
