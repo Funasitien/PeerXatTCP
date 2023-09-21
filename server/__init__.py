@@ -1,92 +1,57 @@
 import socket
 import threading
-import time
-import os
+ 
+HOST = '0.0.0.0'
+PORT = 25631
+SERVER = (HOST, PORT)
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-class TCPServer:
-    def __init__(self, name, reachable="on", discoverable="on"):
-        self.name = name 
-        #self.client_ip = get_hostname() 
-        #self.split_ip = list(map(int, self.client_ip[0].split(".")))
-        self.peers = {}
-        self.discoverable = discoverable
-        self.reachable = reachable
-    
-    def get_port(self):
-        port = os.environ.get('PORT')
-        if not port:
-            os.environ['PORT'] = '50101'
-            port = '50101'
-    
-        self.port = int(port)
-    
-    def scanner(self):
-        threading.Thread(target=self._scanner).start()
-
-    def _scanner(self):
-        host_list = self.split_ip
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        ping_message = f"ping {self.name} {self.port}".encode()
-        for i in range(255):
-            host_list[3] = i
-            ip = ".".join(map(str, host_list))
-            if self.client_ip[0] != ip:
-                try:
-                    sock.connect((ip, self.port))
-                    sock.sendall(ping_message)
-                except ConnectionRefusedError:
-                    pass
-                finally: 
-                    sock.close()
-            time.sleep(0.05)
-    
-    
-    def run(self):
-        TCPServer.get_port(self)
-        host = socket.gethostbyname(socket.gethostname())
+hostname=socket.gethostname()   
+IPAddr=socket.gethostbyname(hostname)   
+print("Your Computer Name is:"+hostname)   
+print("Your Computer IP Address is:"+IPAddr)  
+ 
+server.bind(SERVER)
+server.listen()
+ 
+Clients =[]
+Nicknames =[]
+ 
+def broadcast(message):
+    for client in Clients:
+        client.send(message)
+         
+def handle(client):
+    while True:
+        try:
+            message =client.recv(1024)
+            print(f'{Nicknames[Clients.index(client)]} says {message}')
+            broadcast(message)
+             
+        except:
+            index = Clients.index(client)
+            Clients.remove(client)
+            client.close()
+            nickname =Nicknames[index]
+            Nicknames.remove(nickname)
+            break
+             
+def receive():
+    while True :
+        client ,address = server.accept()
+        print(f'Connected with {str(address)} !')
+         
+        client.send("NICK".encode('utf-8'))
+        nickname= client.recv(1024).decode('utf-8')
+         
+        Nicknames.append(nickname)
+        Clients.append(client)
+        print(f'Nickname of the client is {nickname}')
+        broadcast(f'{nickname} connected to server\n'.encode("utf-8"))
+        client.send("Connected to the server ".encode('utf-8'))
+        client.send("".encode('utf-8'))
+        thread= threading.Thread(target=handle, args=(client,))
+        thread.start()
+print('Server running ///')
+receive()
         
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.bind((host, self.port))
-        
-        print(f"Server listening on {host}:{self.port}")
-        
-        sock.listen(5)
-        
-        while True:
-            conn, addr = sock.accept()  
-            threading.Thread(target=self.handle_connection, args=(conn,addr)).start()
-    
-    def receiver(self):
-        threading.Thread(target=self._receiver).start()
-
-    def _receiver(self):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.bind(("", self.port))
-        sock.listen(5)
-        while True:
-            conn, addr = sock.accept()
-            threading.Thread(target=self._handle_connection, args=(conn,addr)).start()
-
-    def handle_connection(self, conn, addr):
-        print(f"Connection from {addr}")
-
-        while True:
-            data = conn.recv(1024)
-            if not data:
-                break
-            print(f"Received: {data.decode()}")
-            conn.send("back")
-    
-        conn.close()
-
-    def sender(self, message, ip, port=2236):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect((ip,port))
-        request = message.encode()
-        sock.sendall(request)
-        sock.close()
-
-
-if __name__ == '__main__':
-    server = TCPServer("Test")
-    server.run()

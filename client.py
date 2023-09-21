@@ -1,12 +1,28 @@
 import socket
 import threading
+import time
+from config import *
+import os
+from color import color
 
 # Choosing Nickname
-nickname = input("Choose your nickname: ")
+print(PSEUDO)
+nickname = PSEUDO
+
+os.system('cls||clear')
 
 # Connecting To Server
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(('127.0.1.1', 50101))
+is_connected = False
+while is_connected != True:
+    try:
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.connect((IP, PORT))
+        is_connected = True
+        print(color.g + f"Connected to ({IP}, {PORT})!" + color.k)
+    except OSError:
+        print(color.r + f"Can't connect to ({IP}, {PORT})" + color.k)
+        client.close()
+        time.sleep(3)
 
 # Listening to Server and Sending Nickname
 def receive():
@@ -21,7 +37,7 @@ def receive():
                 print(message)
         except:
             # Close Connection When Error
-            print("An error occured!")
+            print(color.r + "An error occured!" + color.k)
             client.close()
             break
         
