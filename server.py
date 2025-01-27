@@ -18,13 +18,14 @@ servers = []
 
 # Sending Messages To All Connected Clients
 def broadcast(message):
+    print("BC:", clients, message)
     for client in clients:
         client.send(message)
         
-    for client in servers:
-        ssd = SCHOOL + ":" + "" + message
-        ssd = ssd.encode('utf-8')
-        client.send(ssd)
+    #for client in servers:
+        #ssd = SCHOOL + ":" + "" + message
+        #ssd = ssd.encode('utf-8')
+        #client.send(ssd)
         
         
 def close():
@@ -37,7 +38,7 @@ def handle(client):
         try:
             # Broadcasting Messages
             message = client.recv(1024)
-            print(message)
+            print("Received", message)
             
             ## CETTE FONCTION EST BUGGER. DES QUE L'ON CALL CLIENT  OU CLIENT.RADRR, LE CLIENT CRASH
             # Aider moi svp
@@ -45,19 +46,20 @@ def handle(client):
                 
                 position = clients.index(client)
                 name = nickname[position]
+                print("DEBUG", position, name, message)
                 broadcast(name + " : " + message)
                 
             elif client in servers:
                 print("DNS")
             
-        except:
+        except Exception as e:
             # Removing And Closing Clients
             index = clients.index(client)
             clients.remove(client)
             client.close()
             nickname = nicknames[index]
             broadcast('{} left!'.format(nickname).encode('utf-8'))
-            print(color.r + f'{nickname} left!' + color.k)
+            print(color.r + f'{nickname} left due to', e + color.k)
             nicknames.remove(nickname)
             break
         

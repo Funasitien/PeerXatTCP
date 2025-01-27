@@ -33,11 +33,11 @@ def receive():
             message = client.recv(1024).decode('utf-8')
             if message == 'NICK':
                 client.send(nickname.encode('utf-8'))
-            else:
+            if message != None and message != "":
                 print(message)
-        except:
+        except Exception as e:
             # Close Connection When Error
-            print(color.r + "An error occured!" + color.k)
+            print(color.r + "An error occured:", e + color.k)
             client.close()
             break
         
