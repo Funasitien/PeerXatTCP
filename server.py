@@ -1,89 +1,54 @@
 import socket
 import threading
-from config import *
-from color import *
-import os
+from config import IP, PORT
 
-os.system('cls||clear')
+clients = []  # liste des sockets connectées
+lock = threading.Lock()  # pour gérer l'accès concurrent à la liste des clients
 
-# Starting Server
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind((IP, PORT))
-server.listen()
+def broadcast(message, sender_socket):
+    with lock:
+        for client in clients:
+            # On n'envoie pas le message au client qui l'a envoyé
+            if client != sender_socket:
+                try:
+                    client.send(message)
+                except Exception as e:
+                    print("Erreur lors de l'envoi à un client :", e)
 
-# Lists For Clients and Their Nicknames
-clients = []
-nicknames = []
-servers = []
-
-# Sending Messages To All Connected Clients
-def broadcast(message):
-    print("BC:", clients, message)
-    for client in clients:
-        client.send(message)
-        
-    #for client in servers:
-        #ssd = SCHOOL + ":" + "" + message
-        #ssd = ssd.encode('utf-8')
-        #client.send(ssd)
-        
-        
-def close():
-    server.close()
-    
-
-# Handling Messages From Clients
-def handle(client):
+def handle_client(client_socket, client_address):
+    print("Connexion de", client_address)
     while True:
         try:
-            # Broadcasting Messages
-            message = client.recv(1024)
-            print("Received", message)
-            
-            ## CETTE FONCTION EST BUGGER. DES QUE L'ON CALL CLIENT  OU CLIENT.RADRR, LE CLIENT CRASH
-            # Aider moi svp
-            if client in clients:
-                
-                position = clients.index(client)
-                name = nickname[position]
-                print("DEBUG", position, name, message)
-                broadcast(name + " : " + message)
-                
-            elif client in servers:
-                print("DNS")
-            
+            data = client_socket.recv(1024)
+            if not data:
+                break  # déconnexion du client
+            print("Message de", client_address, ":", data.decode('utf-8'))
+            broadcast(data, client_socket)
         except Exception as e:
-            # Removing And Closing Clients
-            index = clients.index(client)
-            clients.remove(client)
-            client.close()
-            nickname = nicknames[index]
-            broadcast('{} left!'.format(nickname).encode('utf-8'))
-            print(color.r + f'{nickname} left due to', e + color.k)
-            nicknames.remove(nickname)
+            print("Erreur de communication avec", client_address, ":", e)
             break
-        
-# Receiving / Listening Function
-def receive():
-    print(color.g + "Server Started" + color.k)
+    with lock:
+        if client_socket in clients:
+            clients.remove(client_socket)
+    client_socket.close()
+    print("Déconnexion de", client_address)
+
+def main():
+    host = IP
+    port = PORT
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.bind((host, port))
+    server.listen(5)  # nombre maximal de connexions en attente
+    print("Serveur TCP démarré sur {}:{}".format(host, port))
+    
     while True:
-        # Accept Connection
-        client, address = server.accept()
-        print(color.g + "Connected with {}".format(str(address)) + color.k)
+        client_socket, client_address = server.accept()
+        with lock:
+            clients.append(client_socket)
+        # Démarrage d'un thread pour gérer la connexion du client
+        client_thread = threading.Thread(target=handle_client, args=(client_socket, client_address))
+        client_thread.daemon = True
+        client_thread.start()
 
-        # Request And Store Nickname
-        client.send('NICK'.encode('utf-8'))
-        nickname = client.recv(1024).decode('utf-8')
-        nicknames.append(nickname)
-        clients.append(client)
-
-        # Print And Broadcast Nickname
-        print("Nickname is {}".format(nickname))
-        broadcast("{} joined!".format(nickname).encode('utf-8'))
-        client.send('Connected to server!'.encode('utf-8'))
-
-        # Start Handling Thread For Client
-        thread = threading.Thread(target=handle, args=(client,))
-        thread.start()
-
-receive()
+if __name__ == "__main__":
+    main()

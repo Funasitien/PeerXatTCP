@@ -22,10 +22,11 @@ IP = 'localhost'
 # Port de votre serveur. Par défaut, 50101
 PORT = 50101
 
-#
+# Pseudonyme affiché sur PeerXat
 PSEUDO = 'Elève'
 
-#
+# Couleur de votre profil.
+# Options possibles : [green] 
 COULEUR = 'green'
 
 #    _____          ____                    __  _             ____                         
