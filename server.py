@@ -1,54 +1,58 @@
+import time
 import socket
 import threading
-from config import IP, PORT
+import os
 
-clients = []  # liste des sockets connectées
-lock = threading.Lock()  # pour gérer l'accès concurrent à la liste des clients
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+sock.bind(("", 50101))
+sock.listen()
 
-def broadcast(message, sender_socket):
-    with lock:
-        for client in clients:
-            # On n'envoie pas le message au client qui l'a envoyé
-            if client != sender_socket:
-                try:
-                    client.send(message)
-                except Exception as e:
-                    print("Erreur lors de l'envoi à un client :", e)
+msgDict = {}
 
-def handle_client(client_socket, client_address):
-    print("Connexion de", client_address)
-    while True:
+class ClientClass:
+    def __init__(self, clientValue, clientAdress) -> None:
+        self.clientValue = clientValue
+        self.clientAdress = clientAdress
+
+        self.getNickname()
+
+    def chatLoop(self):
+        while True:
+            msg = self.getMessages()
+            for key in msgDict:
+                if key == self.clientAdress:
+                    continue
+                msgDict[key].append(msg)
+
+            self.sendMessages()
+
+    def getNickname(self):
+        self.nickname = self.getMessages()
+        print(self.nickname)
+
+    def getMessages(self):
         try:
-            data = client_socket.recv(1024)
-            if not data:
-                break  # déconnexion du client
-            print("Message de", client_address, ":", data.decode('utf-8'))
-            broadcast(data, client_socket)
-        except Exception as e:
-            print("Erreur de communication avec", client_address, ":", e)
-            break
-    with lock:
-        if client_socket in clients:
-            clients.remove(client_socket)
-    client_socket.close()
-    print("Déconnexion de", client_address)
+            userMsg = self.clientValue.recv(1024).decode("utf-8")
+        except ConnectionError as e:
+            self.quit()
 
-def main():
-    host = IP
-    port = PORT
-    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.bind((host, port))
-    server.listen(5)  # nombre maximal de connexions en attente
-    print("Serveur TCP démarré sur {}:{}".format(host, port))
-    
-    while True:
-        client_socket, client_address = server.accept()
-        with lock:
-            clients.append(client_socket)
-        # Démarrage d'un thread pour gérer la connexion du client
-        client_thread = threading.Thread(target=handle_client, args=(client_socket, client_address))
-        client_thread.daemon = True
-        client_thread.start()
+        return userMsg
+
+    def sendMessages(self):
+        for index, msg in enumerate(msgDict[self.clientAdress]):
+            encodedMsg = msg.encode("utf-8")
+            self.clientValue.send(encodedMsg)
+
+        msgDict[self.clientAdress] = msgDict[self.clientAdress][index+1:]
+
+    def quit(self):
+        print(self.clientValue, self.clientAdress, "left")
+        del msgDict[self.clientAdress]
+        exit(1)
 
 if __name__ == "__main__":
-    main()
+    while True:
+        newClient, newClientAdress = sock.accept()    
+        threading.Thread(target=ClientClass, args=(newClient, newClientAdress), daemon=True).start()
+        msgDict[newClient] = []
