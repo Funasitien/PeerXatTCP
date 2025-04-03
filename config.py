@@ -26,7 +26,7 @@ PORT = 50101
 PSEUDO = 'Elève'
 
 # Couleur de votre profil.
-# Options possibles : [green] 
+# Options possibles : [green]
 COULEUR = 'green'
 
 #    _____          ____                    __  _             ____                         
