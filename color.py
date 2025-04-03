@@ -1,8 +1,7 @@
 class color:
-    b = '\033[94m' # Blue
-    c = '\033[96m' # Cyan
-    g = '\033[92m' # green
-    y = '\033[93m' # yellow
-    j = '\033[93m' # jaune
-    r = '\033[91m' # red
-    k = '\033[0m' #rest (or gray)
+    blue = '\033[94m'
+    cyan = '\033[96m'
+    green = '\033[92m'
+    yellow = '\033[93m'
+    red = '\033[91m'
+    reset = '\033[0m'
