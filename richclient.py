@@ -6,11 +6,11 @@ from rich.console import Console
 from rich.table import Table
 from rich.style import Style
 from rich.progress import track
+from os import system
 
 def receive_messages(sock):
     while True:
         try:
-            print("Data received from pipline")
             data = sock.recv(1024)
             if not data:
                 break
@@ -33,6 +33,7 @@ def main():
         return
 
     # Initialization du fancy fancy GUI
+    system("clear")
     console.print(ASCII_ART, justify="center", style="bold cyan")
 
     # Démarrage d'un thread pour recevoir les messages du serveur
@@ -40,7 +41,8 @@ def main():
     thread.daemon = True
     thread.start()
 
-    client.send(str([PSEUDO, COULEUR]).encode('utf-8'))
+    uname = color[COULEUR] + PSEUDO + color["reset"]
+    client.send(('utf-8'))
 
     while True:
         message = input("-> ")

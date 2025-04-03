@@ -31,7 +31,7 @@ class ClientClass:
 
     def getNickname(self):
         self.nickname = self.getMessages()
-        print(self.nickname)
+        print("Nickname:", self.nickname)
 
     def getMessages(self):
         try:
@@ -56,6 +56,7 @@ class ClientClass:
         exit(1)
 
 if __name__ == "__main__":
+    os.system("clear")
     while True:
         newClient, newClientAdress = sock.accept()    
         threading.Thread(target=ClientClass, args=(newClient, newClientAdress), daemon=True).start()

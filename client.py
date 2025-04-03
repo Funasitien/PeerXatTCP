@@ -1,6 +1,7 @@
 import socket
 import threading
 from config import IP, PORT
+from color import color
 
 def receive_messages(sock):
     while True:
