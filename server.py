@@ -3,9 +3,11 @@ import socket
 import threading
 import os
 
+from config import IP, PORT
+
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-sock.bind(("", 50101))
+sock.bind((IP, PORT))
 sock.listen()
 
 msgDict = {}
@@ -16,7 +18,9 @@ class ClientClass:
         self.clientAdress = clientAdress
 
         self.getNickname()
-
+        threading.Thread(target=self.sendMessages, daemon=True).start()
+        self.chatLoop()
+        
     def chatLoop(self):
         while True:
             msg = self.getMessages()
@@ -24,8 +28,6 @@ class ClientClass:
                 if key == self.clientAdress:
                     continue
                 msgDict[key].append(msg)
-
-            self.sendMessages()
 
     def getNickname(self):
         self.nickname = self.getMessages()
@@ -40,11 +42,13 @@ class ClientClass:
         return userMsg
 
     def sendMessages(self):
-        for index, msg in enumerate(msgDict[self.clientAdress]):
-            encodedMsg = msg.encode("utf-8")
-            self.clientValue.send(encodedMsg)
+        while True:
+            index = -1
+            for index, msg in enumerate(msgDict[self.clientAdress]):
+                encodedMsg = msg.encode("utf-8")
+                self.clientValue.send(encodedMsg)
 
-        msgDict[self.clientAdress] = msgDict[self.clientAdress][index+1:]
+            msgDict[self.clientAdress] = msgDict[self.clientAdress][index+1:]
 
     def quit(self):
         print(self.clientValue, self.clientAdress, "left")
@@ -55,4 +59,4 @@ if __name__ == "__main__":
     while True:
         newClient, newClientAdress = sock.accept()    
         threading.Thread(target=ClientClass, args=(newClient, newClientAdress), daemon=True).start()
-        msgDict[newClient] = []
+        msgDict[newClientAdress] = []

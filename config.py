@@ -20,7 +20,7 @@ Ce fichier vous permet de configurer votre client / Serveur pour le faire foncti
 IP = 'localhost'
 
 # Port de votre serveur. Par défaut, 50101
-PORT = 50101
+PORT = 50103
 
 # Pseudonyme affiché sur PeerXat
 PSEUDO = 'Elève'
