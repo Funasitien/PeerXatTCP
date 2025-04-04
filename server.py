@@ -19,6 +19,7 @@ class ClientClass:
         self.clientAdress = clientAdress
 
     def threadInit(self) -> None:
+        write(f"{self.clientAdress} joined")
         self.getNickname()
         self.chatLoop()
         
@@ -29,7 +30,7 @@ class ClientClass:
 
     def getNickname(self):
         self.nickname = self.getMessages()
-        print("Nickname:", self.nickname)
+        write(f"{self.clientAdress}'s nickname is {self.nickname}")
 
     def getMessages(self):
         try:
@@ -40,14 +41,17 @@ class ClientClass:
         return userMsg
 
     def quit(self):
-        print(self.clientValue, self.clientAdress, "left")
+        write(f"{self.clientAdress} just quit")
         del clientDict[self.clientAdress]
         exit(1)
+
+def write(msg):
+    print(msg)
 
 def sendMessages():
     global msgList
     while True:
-        
+
         msgToSend = msgList.copy()
         clients = clientDict.copy()
         msgList = msgList[len(msgToSend):]
