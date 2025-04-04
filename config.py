@@ -29,6 +29,9 @@ PSEUDO = 'Elève'
 # Options possibles : [green]
 COULEUR = 'green'
 
+# Options possibles : [classic, matrix]
+THEME = 'classic'
+
 #    _____          ____                    __  _             ____                         
 #   / ___/__  ___  / _(_)__ ___ _________ _/ /_(_)__  ___    / __/__ _____  _____ __ ______
 #  / /__/ _ \/ _ \/ _/ / _ `/ // / __/ _ `/ __/ / _ \/ _ \  _\ \/ -_) __/ |/ / -_) // / __/
